@@ -1,0 +1,58 @@
+# VS Code workspace
+
+# Ignore all files within the .vscode directory
+.vscode/*
+# Exceptions within the .vscode directory
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+!*.code-workspace
+
+.history/
+*.code-workspace
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Logs
+logs
+*.log
+*.log.*
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Runtime data
+lib-cov
+coverage
+*.lcov
+
+# Build output
+out/
+dist/
+build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional cache
+.cache/
+.tmp/
+temp/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Env files
+.env
