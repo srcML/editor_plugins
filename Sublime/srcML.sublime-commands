@@ -1,0 +1,7 @@
+[
+    { "caption" : "srcML: Find with XPath", "command": "srcml_find_xpath" },
+    { "caption" : "srcML: Find All with XPath", "command": "srcml_find_all_xpath" },
+    { "caption" : "srcML: Find All with srcQL", "command": "srcml_find_all_srcql" },
+    { "caption" : "srcML: Convert to srcML", "command": "srcml_convert_to_srcml" },
+    { "caption" : "srcML: Convert from srcML", "command": "srcml_convert_from_srcml" },
+]
