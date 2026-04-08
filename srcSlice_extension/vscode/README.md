@@ -22,12 +22,18 @@ code --install-extension VSIX_FILE
 ## Keyboard Bindings
 ```
 Find Slice
-    Windows/Linux: Ctrl + Alt + S
-    macOS: Cmd + Alt + S
+    Windows/Linux: Ctrl + Alt + F
+    macOS: Cmd + Alt + F
 
 Hide Slice
     Windows/Linux: Ctrl + Alt + H
     macOS: Cmd + Alt + H
+
+Hide Profile Entries (Primary Bar)
+    Windows/Linux: Alt + K
+
+Show Profile Entries (Primary Bar)
+    Windows/Linux: Alt + L
 
 Get Editor Slices (Slice only from editor tabls)
     Windows/Linux: Ctrl + Alt + E
