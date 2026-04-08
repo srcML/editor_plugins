@@ -1,0 +1,166 @@
+<!--
+SPDX-License-Identifier: GPL-3.0-only
+
+@file panel.html
+
+@copyright Copyright (C) 2013-2024 srcML, LLC. (www.srcML.org)
+-->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <!-- vscode exposes its icons vis this css codicon -->
+        <link href="https://unpkg.com/@vscode/codicons/dist/codicon.css" rel="stylesheet" />
+        <style>
+            :focus {
+                /* use the theme-based variable for better visuals */
+                outline: 2px solid var(--vscode-focusBorder);
+            }
+
+            body {
+                font-family: Consolas, Menlo, Monaco, "DejaVu Sans Mono", "Courier New", monospace;
+            }
+
+            details {
+                min-width: 150px;
+                width: 100%;
+                border-radius: 6px;
+            }
+            details summary {
+                list-style: none;
+            }
+            details summary::before {
+                content: ">";
+                display: inline-block;
+                margin-right: 6px;
+                transition: none;
+            }
+            details[open] summary::before {
+                transform: rotate(90deg);
+            }
+
+            summary {
+                cursor: pointer;
+                font-weight: bold;
+                padding: 10px;
+            }
+
+            .content {
+                height: 95vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .panel-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .panel-header .panel-btn {
+                margin-left: auto;
+            }
+
+            .bottom-bar {
+                display: none;
+                border-top: 1px solid #ccc; /* adds a line at the top */
+                padding: 20px;
+            }
+            .find-buttons {
+                display: flex;
+                gap: 8px; /* spacing between buttons */
+            }
+            .panel-btn {
+                width: 24px;
+                height: 24px;
+                
+                border-style: none;
+                color: var(--vscode-editor-foreground, #000);
+                background-color: #00000000;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                padding: 0;
+                font-size: 12px;
+                line-height: 1;
+                transition: background-color 0.2s, border-color 0.2s;
+            }
+            .panel-btn:hover {
+                background-color: var(--vscode-editorWidget-hoverBackground, #e0e0e02f);
+            }
+            .panel-btn:active {
+                background-color: var(--vscode-editorWidget-focusedBackground, #d0d0d0d9);
+            }
+
+            .profile-list {
+                flex: 1;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            #find_target_display {
+                display: inline-block;
+                max-width: 100%;
+                
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+            }
+
+            ul {
+                margin: 0;
+                padding: 0px;
+            }
+
+            ul li {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                padding: 4px;
+            }
+
+            ul li:hover {
+                background-color: rgba(233, 233, 233, 0.349);
+                cursor: pointer;
+            }
+
+            li svg.icon {
+                margin-right: 6px;
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="panel-header">
+            <h2>Slice Profiles</h2>
+            <button id="refresh-visuals" class="panel-btn">
+                <span class="codicon codicon-refresh" title="Refresh Visuals"></span>
+            </button>
+        </div>
+        <div class="content">
+            <ul class="profile-list" role="slice-list" tabindex="0" id="slice-list">
+                {{slice_profiles}}
+            </ul>
+            <div id="profile-find" tabindex="0" class="bottom-bar">
+                <div class="find-buttons">
+                    <span id="find_target_display"></span>
+
+                    <button id="findPrevBtn" class="panel-btn" title="Previous (Shift+Enter)">
+                        <span class="codicon codicon-arrow-up"></span>
+                    </button>
+
+                    <button id="findNextBtn" class="panel-btn" title="Next (Enter)">
+                        <span class="codicon codicon-arrow-down"></span>
+                    </button>
+
+                    <button id="findExitBtn" class="panel-btn" title="Close (Escape)">
+                        <span class="codicon codicon-close"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script type="module" src="{{script_uri}}"></script>
+    </body>
+</html>

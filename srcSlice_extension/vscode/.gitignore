@@ -1,3 +1,9 @@
+# SPDX-License-Identifier: GPL-3.0-only
+#
+# @file .gitignore
+#
+# @copyright Copyright (C) 2013-2024 srcML, LLC. (www.srcML.org)
+
 # VS Code workspace
 
 # Ignore all files within the .vscode directory
@@ -56,3 +62,5 @@ Thumbs.db
 
 # Env files
 .env
+
+panel_dev.html

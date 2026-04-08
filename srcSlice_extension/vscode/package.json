@@ -9,19 +9,79 @@
     "categories": [
         "Other"
     ],
-    "activationEvents": [],
+    "activationEvents": [ "onStartupFinished" ],
     "main": "./out/extension.js",
     "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "srcSlice-extension",
+                    "title": "srcSlice",
+                    "icon": "resources/srcml-logo.svg"
+                }
+            ]
+        },
+        "views": {
+            "srcSlice-extension": [
+                {
+                    "type": "webview",
+                    "id": "srcSlice-viewer",
+                    "name": "srcSlice Panel",
+                    "icon": "resources/srcml-logo.svg"
+                }
+            ]
+        },
         "commands": [
             {
                 "command": "srcslice-extension.findSlice",
                 "title": "Find Slice"
+            },
+            {
+                "command": "srcslice-extension.hideSlice",
+                "title": "Hide Slice"
+            },
+            {
+                "command": "srcslice-extension.getEditorSlices",
+                "title": "Get slices from editors"
+            },
+            {
+                "command": "srcslice-extension.getAllSlices",
+                "title": "Get all Slices within the workspace"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "srcslice-extension.findSlice",
+                "key": "ctrl+alt+f",
+                "mac": "cmd+alt+f",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "srcslice-extension.hideSlice",
+                "key": "ctrl+alt+h",
+                "mac": "cmd+alt+h",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "srcslice-extension.getEditorSlices",
+                "key": "ctrl+alt+e",
+                "mac": "cmd+alt+e"
+            },
+            {
+                "command": "srcslice-extension.getAllSlices",
+                "key": "ctrl+alt+a",
+                "mac": "cmd+alt+a"
             }
         ],
         "menus": {
             "editor/context": [
                 {
                     "command": "srcslice-extension.findSlice",
+                    "when": "editorHasSelection",
+                    "group": "navigation"
+                },
+                {
+                    "command": "srcslice-extension.hideSlice",
                     "when": "editorHasSelection",
                     "group": "navigation"
                 }
@@ -31,15 +91,13 @@
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "pretest": "npm run compile && npm run lint",
-        "lint": "eslint src",
-        "test": "vscode-test"
+        "watch": "tsc -watch -p ./"
     },
     "devDependencies": {
         "@types/mocha": "^10.0.10",
         "@types/node": "22.x",
         "@types/vscode": "^1.104.0",
+        "@types/xml2js": "^0.4.14",
         "@typescript-eslint/eslint-plugin": "^8.42.0",
         "@typescript-eslint/parser": "^8.42.0",
         "@vscode/test-cli": "^0.0.11",
