@@ -61,8 +61,11 @@ SPDX-License-Identifier: GPL-3.0-only
                 gap: 8px;
             }
 
-            .panel-header .panel-btn {
+            .panel-header-btns {
+                display: flex;
+                align-items: center;
                 margin-left: auto;
+                gap: 4px;
             }
 
             .bottom-bar {
@@ -136,9 +139,15 @@ SPDX-License-Identifier: GPL-3.0-only
     <body>
         <div class="panel-header">
             <h2>Slice Profiles</h2>
-            <button id="refresh-visuals" class="panel-btn">
-                <span class="codicon codicon-refresh" title="Refresh Visuals"></span>
-            </button>
+            
+            <div class="panel-header-btns">
+                <button id="profile-filter" class="panel-btn">
+                    <span class="codicon codicon-filter" title="Show selected only"></span>
+                </button>
+                <button id="refresh-visuals" class="panel-btn">
+                    <span class="codicon codicon-refresh" title="Refresh Visuals"></span>
+                </button>
+            </div>
         </div>
         <div class="content">
             <ul class="profile-list" role="slice-list" tabindex="0" id="slice-list">

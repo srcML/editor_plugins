@@ -6,6 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 @copyright Copyright (C) 2013-2024 srcML, LLC. (www.srcML.org)
 */
 
+// Only one instance of this is allowed (cannot be acquired in multiple files)
 export const vscode = typeof acquireVsCodeApi !== 'undefined' ? acquireVsCodeApi() : undefined;
 
 /**
@@ -31,7 +32,7 @@ if (vscode) {
             if (msg.command === "auto-select") {
                 // short-cut endpoint to find a slice
                 if (selectedProfiles.length < profileColors.length) {
-                    addSelected(msg.sliceId);
+                    AddSelected(msg.sliceId);
                 }
                 ShowSelected();
             } else if (msg.command === "hide") {
@@ -83,6 +84,39 @@ if (vscode) {
 }
 
 /**
+ * Send payload data to vscode api using postMessage
+ * 
+ * @param {JSON} data 
+ */
+export function SendMessage(data) {
+    vscode?.postMessage(data);
+}
+
+/**
+ * Send a signal to refresh visualization
+ */
+export function RefreshAll() {
+    // send a highlight signal passing all active items
+    for (const item of selectedProfiles) {
+        const li = document.querySelector(
+            `#slice-list li[data-profile="${CSS.escape(item[0])}"]`
+        );
+        const circle = li?.querySelector("svg circle");
+        circle?.setAttribute("fill", item[1]);
+        
+        ToggleEntry(li);
+
+        const highLightColor = item[1] + alphaValue;
+        // signals vscode api from webview panel
+        SendMessage({
+            command: 'highlight',
+            sliceId: item[0],
+            color: highLightColor
+        });
+    }
+}
+
+/**
  * Find the svg associated with a selected sliceId and grey-fill
  * to show deselection
  * 
@@ -91,7 +125,7 @@ if (vscode) {
  */
 function GreyFill(highlightColor, sliceId) {
     // signals vscode api from webview panel
-    vscode?.postMessage({
+    SendMessage({
         command: 'rmHighlight',
         color: highlightColor
     });
@@ -126,7 +160,7 @@ function FindUnusedColor() {
  * 
  * @param {*} sliceId 
  */
-function addSelected(sliceId) {
+function AddSelected(sliceId) {
     // check if sliceId is already in selectedProfiles
     if (selectedProfiles.find(s => { return s[0] === sliceId})) return;
 
@@ -138,7 +172,20 @@ function addSelected(sliceId) {
     }
 };
 
+/**
+ * Toggle whether an element is rendered in the HTML panel
+ * 
+ * @param {Element} entry 
+ * @returns 
+ */
+function ToggleEntry(entry) {
+    if (!entry) return;
+    entry.style.display = '';
+}
+
 function ShowSelected() {
+    if (!selectedProfiles) return;
+    
     const [sliceid, color] = selectedProfiles.at(-1);
     if (!sliceid || !color) return;
 
@@ -148,42 +195,21 @@ function ShowSelected() {
     const circle = li?.querySelector("svg circle");
     circle?.setAttribute("fill", color);
 
-    showEntry(li);
+    ToggleEntry(li);
 
     const highLightColor = color + alphaValue;
     // signals vscode api from webview panel
-    vscode?.postMessage({
+    SendMessage({
         command: 'highlight',
         sliceId: sliceid,
         color: highLightColor
     });
 }
 
-function RefreshAll() {
-    // send a highlight signal passing all active items
-    for (const item of selectedProfiles) {
-        const li = document.querySelector(
-            `#slice-list li[data-profile="${CSS.escape(item[0])}"]`
-        );
-        const circle = li?.querySelector("svg circle");
-        circle?.setAttribute("fill", item[1]);
-        
-        showEntry(li);
-
-        const highLightColor = item[1] + alphaValue;
-        // signals vscode api from webview panel
-        vscode?.postMessage({
-            command: 'highlight',
-            sliceId: item[0],
-            color: highLightColor
-        });
-    }
-}
-
 let unselected = undefined;
-function SelectSlice(sliceId, ctrlDown) {
+export function SelectSlice(sliceId, ctrlDown) {
     // pop helper method
-    const popItem = (t) => {
+    const PopItem = (t) => {
         const i = selectedProfiles.findIndex(s => { return s === t});
         if (i !== -1) {
             selectedProfiles.splice(i, 1);
@@ -198,13 +224,13 @@ function SelectSlice(sliceId, ctrlDown) {
      * @param {*} t selected item
      * @return newly unselected profile or undefined
      */
-    const unselectItem = (t) => {
+    const UnselectItem = (t) => {
         if (!t) return undefined;
 
         console.log("UNSELECTING");
 
         // remove newly unselected from active list
-        popItem(t);
+        PopItem(t);
 
         const highlightColor = t[1] + alphaValue;
 
@@ -218,7 +244,7 @@ function SelectSlice(sliceId, ctrlDown) {
      * 
      * @param {*} t profile swap target
      */
-    const swapColors = (t) => {
+    const SwapColors = (t) => {
         if (!unselected) return;
 
         // keep a copy of the color of the unselected item to apply to its swap target
@@ -240,23 +266,23 @@ function SelectSlice(sliceId, ctrlDown) {
         if (selectedProfiles.includes(target)) {
             if (ctrlDown) {
                 // swap
-                swapColors(target);
+                SwapColors(target);
                 // reinsert unselected into collection
                 selectedProfiles.push(unselected);
             } else {
-                unselected = unselectItem(target);
+                unselected = UnselectItem(target);
             }
         } else {
             // drop the recently unselected item
             // and add a new selection to the collection
             unselected = undefined;
-            addSelected(sliceId);
+            AddSelected(sliceId);
         }
     } else {
         if (selectedProfiles.includes(target)) {
-            unselected = unselectItem(target);
+            unselected = UnselectItem(target);
         } else if (selectedProfiles.length < profileColors.length) {
-            addSelected(sliceId);
+            AddSelected(sliceId);
         }
     }
 
@@ -264,15 +290,15 @@ function SelectSlice(sliceId, ctrlDown) {
     ShowSelected();
 }
 
-function GetNextOccurrance() {
-    vscode.postMessage({ command: 'nextOccurrance' });
+export function GetNextOccurrance() {
+    SendMessage({ command: 'nextOccurrance' });
 }
 
-function GetLastOccurrance() {
-    vscode.postMessage({ command: 'lastOccurrance' });
+export function GetLastOccurrance() {
+    SendMessage({ command: 'lastOccurrance' });
 }
 
-function manageEntries(entries, isVisible) {
+export function ManageEntries(entries, isVisible) {
     if (!entries) return;
     entries.forEach(li => {
         const circle = li.querySelector("svg circle");
@@ -284,137 +310,5 @@ function manageEntries(entries, isVisible) {
         }
 
         li.style.display = isVisible ? '' : 'none';
-    });
-}
-
-function showEntry(entry) {
-    if (!entry) return;
-    entry.style.display = '';
-}
-
-let currentIndex = 0;
-export function HandleKeyboard() {
-    const sliceList = document.getElementById('slice-list');
-    const items = Array.from(sliceList.querySelectorAll('[role="slice"]'));
-
-    // Initialize focus on the first item when sliceList itself is focused
-    sliceList?.addEventListener('focus', () => {
-        items[currentIndex].tabIndex = 0;
-        items[currentIndex].focus();
-    });
-
-    // Handle arrow key navigation
-    sliceList?.addEventListener('keydown', (e) => {
-        e.preventDefault();
-        const ctrlDown = e.ctrlKey;
-        const altDown = e.altKey;
-        
-        if (altDown) {
-            // hide list entries
-            if (e.key === 'k') {
-                manageEntries(items, false);
-            }
-            // show list entries
-            if (e.key === 'l') {
-                manageEntries(items, true);
-            }
-
-            return;
-        }
-
-        if (e.key === 'ArrowDown') {
-            items[currentIndex].tabIndex = -1;
-            currentIndex = (currentIndex + 1) % items.length;
-            items[currentIndex].tabIndex = 0;
-
-            items[currentIndex].focus();
-        } else if (e.key === 'ArrowUp') {
-            items[currentIndex].tabIndex = -1;
-            currentIndex = (currentIndex - 1 + items.length) % items.length;
-            items[currentIndex].tabIndex = 0;
-
-            items[currentIndex].focus();
-        } else if (e.key === 'Home') {
-            items[currentIndex].tabIndex = -1;
-            currentIndex = 0;
-            items[currentIndex].tabIndex = 0;
-
-            items[currentIndex].focus();
-        } else if (e.key === 'End') {
-            items[currentIndex].tabIndex = -1;
-            currentIndex = items.length - 1;
-            items[currentIndex].tabIndex = 0;
-
-            items[currentIndex].focus();
-        } else if (e.key === 'Enter' || e.key === ' ') {
-            // extracts the data-profile attribute value
-            const value = items[currentIndex].dataset.profile;
-            
-            SelectSlice(value,ctrlDown);
-        }
-    });
-    
-    const profileFind = document.querySelector('.bottom-bar');
-    profileFind?.addEventListener('keydown', (e) => {
-        e.preventDefault();
-        const shiftDown = e.shiftKey;
-        
-        if (e.key === 'Enter' || e.key === ' ') {
-            if (shiftDown) {
-                // prev
-                console.log("Find Prev Instance")
-                GetLastOccurrance();
-            } else {
-                // next
-                console.log("Find Next Instance")
-                GetNextOccurrance();
-            }
-        } else if (e.key === "Escape") {
-            vscode.postMessage({ command: 'quitFind' });
-        }
-    });
-}
-
-export function HandleMouse() {
-    const sliceList = document.getElementById('slice-list');
-
-    // mouse input
-    sliceList?.addEventListener("click", (e) => {
-
-        // get the closet list item on click
-        const item = e.target.closest("li");
-        if (!item || !sliceList.contains(item)) { return; }
-
-        // extracts the data-profile attribute value
-        const value = item.dataset.profile;
-
-        const ctrlDown = e.ctrlKey;
-        SelectSlice(value,ctrlDown);
-    });
-
-    // find exit button
-    const findExitBtn = document.getElementById('findExitBtn');
-    findExitBtn?.addEventListener('click', () => {
-        vscode.postMessage({ command: 'quitFind' });
-    });
-
-    // find next button
-    const findNextBtn = document.getElementById('findNextBtn');
-    findNextBtn?.addEventListener('click', () => {
-        GetNextOccurrance();
-    });
-
-    // find prev button
-    const findPrevBtn = document.getElementById('findPrevBtn');
-    findPrevBtn?.addEventListener('click', () => {
-        GetLastOccurrance();
-    });
-
-    // visual refresh button
-    const refreshVisualsBtn = document.getElementById('refresh-visuals');
-    refreshVisualsBtn?.addEventListener('click', () => {
-        console.log(`[!] Signaling Visualizer to Refresh`);
-        vscode.postMessage({ command: 'refreshVisuals' });
-        setTimeout(() => { RefreshAll() }, 100);
     });
 }

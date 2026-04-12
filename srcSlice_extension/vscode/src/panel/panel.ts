@@ -185,6 +185,8 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         } else if (data.command === "refreshVisuals") {
             await this.visualizer?.ResetVisuals();
             setTimeout(() => {this.visualizer?.CheckOverlaps();}, 200);
+        } else if (data.command === "filter") {
+            vscode.window.showInformationMessage(data.message);
         } else {
             console.error(`Unknown Command: ${data.command}`);
         }
