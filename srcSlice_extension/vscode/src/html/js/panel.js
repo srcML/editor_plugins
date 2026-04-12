@@ -27,12 +27,14 @@ export function HandleKeyboard() {
         const altDown = e.altKey;
         
         if (altDown) {
-            // hide list entries
+            // keep the focus on the panel
+            if (e.key === 'k' || e.key === 'l') sliceList.focus();
+
             if (e.key === 'k') {
+                // hide list entries
                 ManageEntries(items, false);
-            }
-            // show list entries
-            if (e.key === 'l') {
+            } else if (e.key === 'l') {
+                // show list entries
                 ManageEntries(items, true);
             }
 
