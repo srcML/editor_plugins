@@ -2,7 +2,10 @@
     "name": "srcslice-extension",
     "displayName": "srcSlice Extension",
     "description": "Uses srcSlice, a fast lightweight srcML tool for static slicing, for visualizing slices",
+    "publisher":"srcML",
+    "icon":"resources/extension-icon.png",
     "version": "0.0.1",
+    "license": "GPL-3.0",
     "engines": {
         "vscode": "^1.104.0"
     },
