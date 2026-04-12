@@ -342,6 +342,11 @@ export function Pos2Range(start:LinePosition, end:LinePosition): vscode.Range {
  * @returns [filename, start of variable name, end of variable name]
  */
 export async function createLineRange(posStr:string): Promise<[string, LinePosition,LinePosition]> {
+    if (!posStr) {
+        vscode.window.showWarningMessage('Position string not defined');
+        return ["", new LinePosition(), new LinePosition()];
+    }
+
     const [file, line, column] = posStr.split(":");
     
     const startPos:LinePosition = new LinePosition(

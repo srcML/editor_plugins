@@ -70,11 +70,15 @@ export async function generateLines(profile:SliceProfile): Promise<Set<[string,n
     if (profile) {
         const { use, definition } = profile.sliceData;
         for (const item of use) {
+            if (!item) continue;
+            
             const [file, line, column] = item.split(":");
             if (line) lines.add([file, Number(line)]);
         }
 
         for (const item of definition) {
+            if (!item) continue;
+
             const [file, line, column] = item.split(":");
             if (line) lines.add([file, Number(line)]);
         }

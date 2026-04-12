@@ -67,6 +67,11 @@ export class SliceProfile {
     }
 
     getDisplayString() {
+        if (!this.sliceId) {
+            vscode.window.showWarningMessage('Slice Id not defined');
+            return "Display Error";
+        }
+
         const components = this.sliceId.split("-");
 
         const name = components[0];
@@ -90,6 +95,11 @@ export class SliceProfile {
      * @returns file hash string within slice id
      */
     getFileHash() {
+        if (!this.sliceId) {
+            vscode.window.showWarningMessage('Slice Id not defined');
+            return "";
+        }
+
         const components = this.sliceId.split("-");
         if (components.length === 4) {
             return components[components.length-1];
@@ -102,6 +112,11 @@ export class SliceProfile {
      * @returns profile's declaration line:column position
      */
     getDecl(): [number, number] {
+        if (!this.sliceData.decl) {
+            vscode.window.showWarningMessage('Slice decl not defined');
+            return [0,0];
+        }
+
         const components = this.sliceData.decl.split(":");
         const line = components[1];
         const column = components[2];
@@ -181,25 +196,6 @@ export class HighLight {
                 overviewRulerLane: vscode.OverviewRulerLane.Left
             });
         }
-
-        // update range values on edit
-        vscode.workspace.onDidChangeTextDocument(event => {
-            for (const change of event.contentChanges) {
-                // check if lines were removed or added
-                const removedLines =
-                    change.range.end.line - change.range.start.line;
-
-                const addedLines =
-                    change.text.split('\n').length - 1;
-
-                const lineShift:boolean = (removedLines > addedLines) || (addedLines > removedLines);
-                const rowShift:boolean = (change.text.length > 0) || (change.rangeLength > 0);
-
-                if (lineShift || rowShift) {
-                    
-                }
-            }
-        });
     }
     dtor() {
         console.log(`---> disposing decoration`);
