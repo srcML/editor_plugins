@@ -49,7 +49,7 @@
             },
             {
                 "command": "srcslice-extension.getAllSlices",
-                "title": "Get all Slices within the workspace"
+                "title": "Get all slices within the workspace"
             }
         ],
         "keybindings": [
@@ -64,6 +64,11 @@
                 "key": "ctrl+alt+h",
                 "mac": "cmd+alt+h",
                 "when": "editorTextFocus"
+            },
+            {
+                "command": "srcslice-extension.refreshVisuals",
+                "key": "ctrl+shift+r",
+                "mac": "cmd+shift+r"
             },
             {
                 "command": "srcslice-extension.getEditorSlices",

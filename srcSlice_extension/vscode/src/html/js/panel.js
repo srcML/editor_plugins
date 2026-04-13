@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 @copyright Copyright (C) 2013-2024 srcML, LLC. (www.srcML.org)
 */
 
-import { SendMessage, RefreshAll, ManageEntries,
+import { SendMessage, RefreshVisuals, ManageEntries,
          SelectSlice, GetNextOccurrance, GetLastOccurrance } from "./utils.js";
 
 let currentIndex = 0;
@@ -132,9 +132,7 @@ export function HandleMouse() {
     // visual refresh button
     const refreshVisualsBtn = document.getElementById('refresh-visuals');
     refreshVisualsBtn?.addEventListener('click', () => {
-        console.log(`[!] Signaling Visualizer to Refresh`);
-        SendMessage({ command: 'refreshVisuals' });
-        setTimeout(() => { RefreshAll() }, 100);
+        RefreshVisuals();
     });
 
     const profileFilterBtn = document.getElementById('profile-filter');

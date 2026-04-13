@@ -140,7 +140,7 @@ export function activate(context: vscode.ExtensionContext) {
     const docChange = vscode.window.onDidChangeActiveTextEditor(editor => {
         if (!editor) { return; }
         console.log(`Editor Changed (new tab opened) -> ${editor.document.uri.fsPath}`);
-        SlicePanel?.Refresh();
+        SlicePanel?.Reload();
     });
     context.subscriptions.push(docChange);
 
@@ -239,6 +239,14 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
     context.subscriptions.push(hideSlice);
+
+    let refreshVisuals = vscode.commands.registerCommand("srcslice-extension.refreshVisuals",
+        async () => {
+            await SlicePanel.RefreshVisuals();
+            await vscode.commands.executeCommand('workbench.view.extension.srcSlice-extension');
+        }
+    );
+    context.subscriptions.push(refreshVisuals);
 }
 
 // This method is called when your extension is deactivated

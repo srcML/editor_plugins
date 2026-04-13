@@ -10,7 +10,7 @@ import * as vscode from 'vscode';
 
 import { srcML, srcSlice, fromFileTable } from '../utils/generate';
 import { SliceProfile, SliceData } from '../utils/collections';
-import { generateIdentifiers } from '../utils/utils';
+import { generateIdentifiers, sleep } from '../utils/utils';
 
 import * as fs from "fs";
 import * as path from "path";
@@ -108,6 +108,7 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
 
     private panel: vscode.WebviewView|undefined;
     private ctx: vscode.ExtensionContext;
+    private panelActive: boolean = false;
 
     private visualizer:Visualizer|undefined;
     private walker:ProfileWalker|undefined;
@@ -175,18 +176,24 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         } else if (data.command === "lastOccurrance") {
             this.walker?.lastOccurrance();
         } else if (data.command === "quitFind") {
-            if (this.walker) {
+            if (this.walker && this.panel) {
                 // remove the walker
-                this.panel?.webview.postMessage({
+                this.panel.webview.postMessage({
                     command: 'hide-find'
                 });
                 this.walker.dtor();
+            } else {
+                console.error("Profile Walker or Webview Panel not defined");
             }
         } else if (data.command === "refreshVisuals") {
+            console.log("[*] Refreshing Visuals");
             await this.visualizer?.ResetVisuals();
             setTimeout(() => {this.visualizer?.CheckOverlaps();}, 200);
         } else if (data.command === "filter") {
             vscode.window.showInformationMessage(data.message);
+        } else if (data.command === "listener-ready") {
+            console.log("[+] Panel listener ready!");
+            this.panelActive = true;
         } else {
             console.error(`Unknown Command: ${data.command}`);
         }
@@ -228,10 +235,20 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         }
     }
 
-    async Refresh() {
+    /**
+     * Reload highlights for active profiles
+     * 
+     * @returns 
+     */
+    async Reload() {
+        if (!this.panel) {
+            console.error("Webview Panel not defined");
+            return;
+        }
+
         // send signal to auto-select item
-        this.panel?.webview.postMessage({
-            command: 'refresh'
+        this.panel.webview.postMessage({
+            command: 'reload'
         });
     }
 
@@ -355,6 +372,11 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
     }
 
     private DisplayFind(sline: [number, number], sp: SliceProfile) {
+        if (!this.panel) {
+            console.error("Webview Panel not defined");
+            return;
+        }
+
         if (this.walker) {
             this.walker.dtor();
         }
@@ -362,15 +384,22 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
 
         const targetString = `${sp.sliceData.name} ${sline[0]}:${sline[1]} ${sp.identifier}`;
 
+        console.log(`[*] Find Target String -> ${targetString}`);
+
         // signal to focus on the find section
         // of the panel
-        this.panel?.webview.postMessage({
+        this.panel.webview.postMessage({
             command: 'update-find',
             findTarget: targetString
         });
     }
 
     async FindSlice(data: SliceSearch) {
+        if (!this.panel) {
+            console.error("Webview Panel not defined");
+            return;
+        }
+
         const { name, sline, file } = data;
         if (!sline) return;
         if (this.slices.length === 0) return;
@@ -383,16 +412,27 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
 
         console.log(`Finding Slice Id -> ${sp.sliceId}`);
 
+        // halt until the listener is active
+        while (!this.panelActive) {
+            console.log("[!] Waiting for panel listener to be active");
+            await sleep(100);
+        }
+
         this.DisplayFind(sline, sp);
 
         // send signal to auto-select item
-        this.panel?.webview.postMessage({
+        this.panel.webview.postMessage({
             command: 'auto-select',
             sliceId: sp.sliceId
         });
     }
 
     async HideSlice(data: SliceSearch) {
+        if (!this.panel) {
+            console.error("Webview Panel not defined");
+            return;
+        }
+
         const { name, sline, file } = data;
         if (!sline) return;
         if (this.slices.length === 0) return;
@@ -403,7 +443,7 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         console.log(`Hiding Slice Id -> ${sp.sliceId}`);
 
         // send signal to auto-select item
-        this.panel?.webview.postMessage({
+        this.panel.webview.postMessage({
             command: 'hide',
             sliceId: sp.sliceId
         });
@@ -420,4 +460,15 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
 
     HasProfiles() { return this.slices.length > 0; }
     GetProfileWalker() { return this.walker; }
+
+    RefreshVisuals() {
+        if (!this.panel) {
+            console.error("Webview Panel not defined");
+            return;
+        }
+
+        this.panel.webview.postMessage({
+            command: 'refresh'
+        });
+    }
 }

@@ -53,12 +53,17 @@ if (vscode) {
                         GreyFill(highlightColor, msg.sliceId);
                     }
                 }
+            } else if (msg.command === "reload") {
+                HighlightSelected();
             } else if (msg.command === "refresh") {
-                RefreshAll();
+                RefreshVisuals();
             } else if (msg.command === "update-find") {
                 if (msg.findTarget) {
                     const bottomBar = document.querySelector('.bottom-bar');
                     const findDisplay = document.getElementById('find_target_display');
+
+                    console.log(bottomBar ? "Bottom Bar Found" : "Unknown Bottom Bar");
+                    console.log(findDisplay ? "Find Display Found" : "Unknown Find Display");
 
                     if (bottomBar) {
                         bottomBar.style.display = 'block'; // display it
@@ -81,6 +86,13 @@ if (vscode) {
             }
         }
     });
+
+    // inform the extension the panel is listening
+    SendMessage({
+        command: 'listener-ready'
+    });
+} else {
+    console.error("vscode undefined")
 }
 
 /**
@@ -93,9 +105,9 @@ export function SendMessage(data) {
 }
 
 /**
- * Send a signal to refresh visualization
+ * Send highlight signals to color all active profiles
  */
-export function RefreshAll() {
+function HighlightSelected() {
     // send a highlight signal passing all active items
     for (const item of selectedProfiles) {
         const li = document.querySelector(
@@ -184,26 +196,30 @@ function ToggleEntry(entry) {
 }
 
 function ShowSelected() {
-    if (!selectedProfiles) return;
-    
-    const [sliceid, color] = selectedProfiles.at(-1);
-    if (!sliceid || !color) return;
+    try {
+        if (!selectedProfiles) return;
 
-    const li = document.querySelector(
-        `#slice-list li[data-profile="${CSS.escape(sliceid)}"]`
-    );
-    const circle = li?.querySelector("svg circle");
-    circle?.setAttribute("fill", color);
+        const [sliceid, color] = selectedProfiles.at(-1);
+        if (!sliceid || !color) return;
 
-    ToggleEntry(li);
+        const li = document.querySelector(
+            `#slice-list li[data-profile="${CSS.escape(sliceid)}"]`
+        );
+        const circle = li?.querySelector("svg circle");
+        circle?.setAttribute("fill", color);
 
-    const highLightColor = color + alphaValue;
-    // signals vscode api from webview panel
-    SendMessage({
-        command: 'highlight',
-        sliceId: sliceid,
-        color: highLightColor
-    });
+        ToggleEntry(li);
+
+        const highLightColor = color + alphaValue;
+        // signals vscode api from webview panel
+        SendMessage({
+            command: 'highlight',
+            sliceId: sliceid,
+            color: highLightColor
+        });
+    } catch (e) {
+        console.error(`[-] ${e}`);
+    }
 }
 
 let unselected = undefined;
@@ -258,7 +274,7 @@ export function SelectSlice(sliceId, ctrlDown) {
 
         // refresh the state to ensure all changes
         // are displayed on the extension side
-        RefreshAll();
+        HighlightSelected();
     }
 
     const target = selectedProfiles.find(s => { return s[0] === sliceId });
@@ -311,4 +327,10 @@ export function ManageEntries(entries, isVisible) {
 
         li.style.display = isVisible ? '' : 'none';
     });
+}
+
+export function RefreshVisuals() {
+    console.log(`[!] Signaling Visualizer to Refresh`);
+    SendMessage({ command: 'refreshVisuals' });
+    setTimeout(() => { HighlightSelected() }, 100);
 }
