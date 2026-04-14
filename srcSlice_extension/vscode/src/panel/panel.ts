@@ -111,7 +111,7 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
     private panelActive: boolean = false;
 
     private visualizer:Visualizer|undefined;
-    private walker:ProfileWalker|undefined;
+    private walker:ProfileWalker = new ProfileWalker();
 
     resolveWebviewView(view: vscode.WebviewView) {
         this.panel = view;
@@ -164,6 +164,8 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             });
             if (!slice) return;
 
+            this.UpdateWalker(slice);
+
             await this.visualizer?.CreateSliceMarkup(slice, highLightColor);
             await this.visualizer?.RenderBackgrounds();
         } else if (data.command === "rmHighlight") {
@@ -171,20 +173,21 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             
             await this.visualizer?.RemoveSliceMarkup(color);
             await this.visualizer?.RenderBackgrounds();
+
+            console.log(`[!] Remove Highlight for -> ${data.sliceId}`);
+
+            // remove profile from walker
+            this.walker.popProfile(this.slices.find(s => s.sliceId === data.sliceId));
+
+            if (this.walker.activeCount() > 0) return;
+            // hide the walker visual in the webview panel
+            this.panel?.webview.postMessage({
+                command: 'hide-find'
+            });
         } else if (data.command === "nextOccurrance") {
             this.walker?.nextOccurrance();
         } else if (data.command === "lastOccurrance") {
             this.walker?.lastOccurrance();
-        } else if (data.command === "quitFind") {
-            if (this.walker && this.panel) {
-                // remove the walker
-                this.panel.webview.postMessage({
-                    command: 'hide-find'
-                });
-                this.walker.dtor();
-            } else {
-                console.error("Profile Walker or Webview Panel not defined");
-            }
         } else if (data.command === "refreshVisuals") {
             console.log("[*] Refreshing Visuals");
             await this.visualizer?.ResetVisuals();
@@ -371,19 +374,17 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         return sp;
     }
 
-    private DisplayFind(sline: [number, number], sp: SliceProfile) {
+    private UpdateWalker(sp: SliceProfile, sline: [number, number] | undefined = undefined) {
         if (!this.panel) {
             console.error("Webview Panel not defined");
             return;
         }
 
-        if (this.walker) {
-            this.walker.dtor();
-        }
-        this.walker = new ProfileWalker(sline, sp);
+        this.walker.pushProfile(sp, sline);
+        
+        if (!sline) sline = sp.getDecl();
 
         const targetString = `${sp.sliceData.name} ${sline[0]}:${sline[1]} ${sp.identifier}`;
-
         console.log(`[*] Find Target String -> ${targetString}`);
 
         // signal to focus on the find section
@@ -418,7 +419,7 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             await sleep(100);
         }
 
-        this.DisplayFind(sline, sp);
+        this.UpdateWalker(sp, sline);
 
         // send signal to auto-select item
         this.panel.webview.postMessage({
@@ -441,6 +442,8 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         if (!sp) return;
 
         console.log(`Hiding Slice Id -> ${sp.sliceId}`);
+
+        this.walker.popProfile(sp);
 
         // send signal to auto-select item
         this.panel.webview.postMessage({

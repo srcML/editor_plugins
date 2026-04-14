@@ -66,6 +66,13 @@ export class SliceProfile {
         }
     }
 
+    /**
+     * Display string formatted: `name declLine:declColumn`
+     * 
+     * example: `x 4:8`
+     * 
+     * @returns 
+     */
     getDisplayString() {
         if (!this.sliceId) {
             vscode.window.showWarningMessage('Slice Id not defined');

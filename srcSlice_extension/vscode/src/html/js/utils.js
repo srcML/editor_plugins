@@ -139,7 +139,8 @@ function GreyFill(highlightColor, sliceId) {
     // signals vscode api from webview panel
     SendMessage({
         command: 'rmHighlight',
-        color: highlightColor
+        color: highlightColor,
+        sliceId: sliceId
     });
 
     // change the fill color of the html elements svg to show unselected feedback
@@ -198,8 +199,9 @@ function ToggleEntry(entry) {
 function ShowSelected() {
     try {
         if (!selectedProfiles) return;
+        if (selectedProfiles.length === 0) return;
 
-        const [sliceid, color] = selectedProfiles.at(-1);
+        const [sliceid, color] = selectedProfiles.at(selectedProfiles.length-1);
         if (!sliceid || !color) return;
 
         const li = document.querySelector(
@@ -242,15 +244,16 @@ export function SelectSlice(sliceId, ctrlDown) {
      */
     const UnselectItem = (t) => {
         if (!t) return undefined;
+        const [ sliceid, sliceColor ] = t;
 
-        console.log("UNSELECTING");
+        console.log(`UNSELECTING -> ${sliceid}`);
 
         // remove newly unselected from active list
         PopItem(t);
 
-        const highlightColor = t[1] + alphaValue;
+        const highlightColor = sliceColor + alphaValue;
 
-        GreyFill(highlightColor, t[0]);
+        GreyFill(highlightColor, sliceid);
 
         return t;
     };

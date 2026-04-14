@@ -88,8 +88,6 @@ export function HandleKeyboard() {
                 console.log("Find Next Instance")
                 GetNextOccurrance();
             }
-        } else if (e.key === "Escape") {
-            SendMessage({ command: 'quitFind' });
         }
     });
 }
@@ -109,12 +107,6 @@ export function HandleMouse() {
 
         const ctrlDown = e.ctrlKey;
         SelectSlice(value,ctrlDown);
-    });
-
-    // find exit button
-    const findExitBtn = document.getElementById('findExitBtn');
-    findExitBtn?.addEventListener('click', () => {
-        SendMessage({ command: 'quitFind' });
     });
 
     // find next button
