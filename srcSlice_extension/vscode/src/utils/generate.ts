@@ -265,7 +265,7 @@ export async function srcSlice(srcMLInput: string): Promise<[boolean, string]> {
     
     // run srcSlice against the input and generate JSON output file
     await new Promise<void>((resolve, reject) => {
-        const proc = spawn('srcslice', [srcMLInput, '-o', srcSliceOutput]);
+        const proc = spawn('srcslice', [srcMLInput, '-c', '-o', srcSliceOutput]);
 
         // read stdout/stderr to prevent hanging
         proc.stdout.on('data', (data) => {});

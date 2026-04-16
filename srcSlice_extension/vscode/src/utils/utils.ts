@@ -12,6 +12,7 @@ import * as path from 'path';
 
 import { SliceProfile, LinePosition } from "./collections";
 import { createLineRange } from "./generate";
+import { create } from 'domain';
 
 /**
  * Custom Sleep function
@@ -41,21 +42,102 @@ export function randomString(length = 8) {
  * @param profile Slice Profile
  */
 export async function generateSlines(profile:SliceProfile): Promise<Array<[string, LinePosition, LinePosition]>> {
-    let slines:Array<[string, LinePosition, LinePosition]> = new Array<[string, LinePosition, LinePosition]>();
-    
+    let slines: Array<[string, LinePosition, LinePosition]> = [];
+    const lineGroups = new Map<string, Set<string>>();
+
     if (profile) {
         const { use, definition } = profile.sliceData;
-        for (const item of use) {
-            const data = await createLineRange(item);
-            if (data) slines.push(data);
+        for (const line of [...use, ...definition]) {
+            const fpath = line.split(':')[0];
+            if (!lineGroups.has(fpath)) {
+                lineGroups.set(fpath, new Set<string>());
+            }
+            lineGroups.get(fpath)?.add(line);
         }
 
-        for (const item of definition) {
-            const data = await createLineRange(item);
-            if (data) slines.push(data);
+        let sortedLines: Array<string> = [];
+        const lines = [...(lineGroups.get(profile.getFile()) || [])];
+        lines.sort((a, b) => {
+            const [, aLine, aCol] = a.split(':').map(Number);
+            const [, bLine, bCol] = b.split(':').map(Number);
+            return aLine !== bLine ? aLine - bLine : aCol - bCol;
+        });
+
+        const callMap = new Map<string, string>();
+        for (const call of profile.sliceData.calls) {
+            const [invokeFile, invokeLine] = call.invoke.split(':');
+            // Find the closest line at or after the invoke position
+            const match = lines.find(line => {
+                const [lineFile, lineNum] = line.split(':');
+                return lineFile === invokeFile && Number(lineNum) >= Number(invokeLine);
+            });
+            if (match) callMap.set(match, call.invoke);
+        }
+
+        const insertCallLines = (invokeLine: string) => {
+            const func = profile.sliceData.calls.find(c => c.invoke === invokeLine);
+            if (!func) return [];
+
+            const call_sline_start = profile.sliceData.use.find(line => {
+                const [lineFile, lineNum] = line.split(':');
+                const [funcFile, funcLine] = func.definitionPosition.split(':');
+                return lineFile === funcFile && Number(lineNum) >= Number(funcLine);
+            });
+
+            if (!call_sline_start) return [];
+            // console.log(`first sline based on call -> ${call_sline_start}`);
+
+            // find full forward sline list where
+            // index 0 -> start and length-1 -> end
+            const findTransitiveEnd = (start: string) => {
+                let flowLines: Array<string> = [];
+                if (!profile.sliceData.controlEdges) return flowLines;
+                const edges = profile.sliceData.controlEdges;
+
+                let current = start;
+
+                while (true) {
+                    const next = edges.find(e => e[0] === current);
+
+                    // if a find fails we've found the end
+                    if (!next) {
+                        flowLines.push(current);
+                        break;
+                    }
+
+                    flowLines.push(current);
+
+                    current = next[1];
+                }
+
+                return flowLines;
+            };
+
+            return findTransitiveEnd(call_sline_start);
+        };
+
+        let insert = false;
+        for (const line of lines) {
+            if (line === profile.sliceData.decl) {
+                insert = true;
+            }
+            if (!insert) continue;
+            sortedLines.push(line);
+
+            const isCall = callMap.get(line);
+            if (isCall) {
+                const result = insertCallLines(isCall);
+                // console.log(result);
+                sortedLines = sortedLines.concat(result);
+                sortedLines.push(line);
+            }
+        }
+        
+        // convert array of strings into acceptable format
+        for (const line of sortedLines) {
+            slines.push( await createLineRange(line) );
         }
     }
-    
     return slines;
 }
 
