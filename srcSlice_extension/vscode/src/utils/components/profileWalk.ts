@@ -20,9 +20,6 @@ export default class ProfileWalker {
     private lineFocus: vscode.TextEditorDecorationType|undefined;
 
     constructor() {}
-    dtor() {
-        this.lineFocus?.dispose();
-    }
 
     pushProfile(sp: SliceProfile, sline: [number, number] | undefined = undefined) {
         // do not insert duplicates
@@ -38,6 +35,8 @@ export default class ProfileWalker {
         
         // update index on new push
         if (!sline) return;
+        // find command will send a sline based on selectedText
+        // cursor is moved to that position
         this.slineIndex = sp.slines.findIndex(s => {
             return s[1].ToString() === `${sline[0]}:${sline[1]}`;
         });
@@ -47,18 +46,17 @@ export default class ProfileWalker {
         console.log('[*] Removing Profile');
 
         const pos = this.profiles.findIndex(p => p === sp);
-
         if (pos === -1) return;
-
-        // reference to currently indexed profile
-        const current = this.profiles.at(this.profileIndex);
 
         this.profiles.splice(pos, 1);
 
-        this.profileIndex = 0;
-        if (this.profiles.length > 0 && current) {
-            // re-index post-removal
-            this.profileIndex = this.profiles.findIndex(sp => sp === current);
+        if (this.profiles.length > 0) {
+            // re-index at most recent enabled profile (back of the array)
+            this.profileIndex = this.profiles.length - 1;
+            this.slineIndex = 0;
+            this.repositionCursor();
+        } else {
+            this.clearDecorations();
         }
     }
     activeCount(): number { return this.profiles.length };
@@ -97,7 +95,7 @@ export default class ProfileWalker {
         );
 
         // dispose existing decoration before creating a new one
-        this.lineFocus?.dispose();
+        this.clearDecorations();
         this.lineFocus = vscode.window.createTextEditorDecorationType({
             backgroundColor: "#626262ce",
             isWholeLine: true
@@ -108,6 +106,18 @@ export default class ProfileWalker {
             editor?.setDecorations(this.lineFocus, [r]);
         }
     };
+
+    /**
+     * Call when profile index had to be recomputed due to removal
+     */
+    private async repositionCursor() {
+        const sline = this.profiles[this.profileIndex].slines.at(this.slineIndex);
+        if (!sline) return;
+
+        const [ file, start, end ] = sline;
+        await this.changeEditor(file);
+        this.moveCursor(start);
+    }
 
     /**
      * Move cursor to the next sline
@@ -151,5 +161,9 @@ export default class ProfileWalker {
         const [ file, start, end ] = sline;
         await this.changeEditor(file);
         this.moveCursor(start);
+    }
+
+    clearDecorations() {
+        this.lineFocus?.dispose();
     }
 };
