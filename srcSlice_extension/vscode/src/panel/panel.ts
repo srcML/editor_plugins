@@ -380,6 +380,7 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             return;
         }
 
+        this.walker.setPanel(this.panel);
         this.walker.pushProfile(sp, sline);
         
         if (!sline) sline = sp.getDecl();

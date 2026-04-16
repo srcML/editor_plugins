@@ -19,7 +19,14 @@ export default class ProfileWalker {
 
     private lineFocus: vscode.TextEditorDecorationType|undefined;
 
+    private slicePanel : vscode.WebviewView | undefined;
+
     constructor() {}
+
+    setPanel(panel: vscode.WebviewView) {
+        if (this.slicePanel) return; // only need to set this once
+        this.slicePanel = panel;
+    }
 
     pushProfile(sp: SliceProfile, sline: [number, number] | undefined = undefined) {
         // do not insert duplicates
@@ -75,7 +82,9 @@ export default class ProfileWalker {
             query: file
         });
         const doc = await vscode.workspace.openTextDocument(uri);
-        await vscode.window.showTextDocument(doc);
+        // preserveFocus ensures focus is not stolen from the user when
+        // pushing the document into foreground
+        await vscode.window.showTextDocument(doc, { preserveFocus: true });
     }
 
     private moveCursor(pos: LinePosition|undefined) {
@@ -108,7 +117,7 @@ export default class ProfileWalker {
     };
 
     /**
-     * Call when profile index had to be recomputed due to removal
+     * Move cursor to an sline
      */
     private async repositionCursor() {
         const sline = this.profiles[this.profileIndex].slines.at(this.slineIndex);
@@ -117,6 +126,8 @@ export default class ProfileWalker {
         const [ file, start, end ] = sline;
         await this.changeEditor(file);
         this.moveCursor(start);
+
+        this.updateWalkDisplay();
     }
 
     /**
@@ -133,12 +144,7 @@ export default class ProfileWalker {
             this.slineIndex = 0;
         }
 
-        const sline = this.profiles[this.profileIndex].slines.at(this.slineIndex);
-        if (!sline) return;
-
-        const [ file, start, end ] = sline;
-        await this.changeEditor(file);
-        this.moveCursor(start);
+        await this.repositionCursor();
     }
 
     /**
@@ -155,15 +161,24 @@ export default class ProfileWalker {
             this.slineIndex = this.profiles[this.profileIndex].slines.length - 1;
         }
 
-        const sline = this.profiles[this.profileIndex].slines.at(this.slineIndex);
-        if (!sline) return;
-        
-        const [ file, start, end ] = sline;
-        await this.changeEditor(file);
-        this.moveCursor(start);
+        await this.repositionCursor();
     }
 
-    clearDecorations() {
+    private updateWalkDisplay() {
+        const sp: SliceProfile = this.profiles[this.profileIndex];
+
+        const sline: [number, number] = sp.getDecl();
+        const targetString = `${sp.sliceData.name} ${sline[0]}:${sline[1]} ${sp.identifier}`;
+
+        console.log(`[*] Find Find Focus String -> ${targetString}`);
+
+        this.slicePanel?.webview.postMessage({
+            command: 'update-find',
+            findTarget: targetString
+        });
+    }
+
+    private clearDecorations() {
         this.lineFocus?.dispose();
     }
 };
