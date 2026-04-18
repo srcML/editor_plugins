@@ -475,4 +475,11 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             command: 'refresh'
         });
     }
+
+    Filter(status: boolean) {
+        this.panel?.webview.postMessage({
+            command: 'filter-profiles',
+            showAll: status
+        });
+    }
 }

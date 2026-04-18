@@ -65,11 +65,18 @@
                 "mac": "cmd+alt+h",
                 "when": "editorTextFocus"
             },
+            
             {
-                "command": "srcslice-extension.refreshVisuals",
-                "key": "ctrl+shift+r",
-                "mac": "cmd+shift+r"
+                "command": "srcslice-extension.filterOff",
+                "key": "ctrl+alt+l",
+                "mac": "cmd+alt+l"
             },
+            {
+                "command": "srcslice-extension.filterOn",
+                "key": "ctrl+alt+k",
+                "mac": "cmd+alt+k"
+            },
+            
             {
                 "command": "srcslice-extension.getEditorSlices",
                 "key": "ctrl+alt+e",

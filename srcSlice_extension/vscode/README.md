@@ -33,13 +33,15 @@ Hide Slice
     Windows/Linux: Ctrl + Alt + H
     macOS: Cmd + Alt + H
 
-Filter Only Selected (Primary Bar)
-    Windows/Linux: Alt + K
+Filter Only Selected
+    Windows/Linux: Ctrl + Alt + K
+    macOS: Cmd + Alt + K
 
-Show All Entries (Primary Bar)
-    Windows/Linux: Alt + L
+Show All Entries
+    Windows/Linux: Ctrl + Alt + L
+    macOS: Cmd + Alt + L
 
-Get Editor Slices (Slice only from editor tabls)
+Get Editor Slices (Slice only from active tabs)
     Windows/Linux: Ctrl + Alt + E
     macOS: Cmd + Alt + E
 
