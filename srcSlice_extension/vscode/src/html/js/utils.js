@@ -83,6 +83,40 @@ if (vscode) {
                         findDisplay.textContent = "";
                     }
                 }
+            } else if (msg.command === "filter-profiles") {
+                console.log("Recv'd Filter Instruction");
+
+                const sliceList = document.getElementById('slice-list');
+                const items = Array.from(sliceList.querySelectorAll('[role="slice"]'));
+
+                if (!sliceList || !items) return;
+
+                // update the filter button appearance
+                const profileFilterBtn = document.getElementById('profile-filter');
+                const btnIcon = profileFilterBtn.children.item(0);
+                if (!btnIcon) return;
+                
+                if (!msg.showAll) {
+                    btnIcon.classList.remove("codicon-filter");
+                    
+                    // show filter active
+                    btnIcon.classList.add("codicon-filter-filled");
+                    btnIcon.title = "Show selected only";
+                    
+                    // popup feedback
+                    SendMessage({ command: 'filter', message: 'Hiding unselected profiles' });
+                } else {
+                    btnIcon.classList.remove("codicon-filter-filled");
+                    
+                    // show filter inactive
+                    btnIcon.classList.add("codicon-filter");
+                    btnIcon.title = "Show all profiles";
+                    
+                    // popup feedback
+                    SendMessage({ command: 'filter', message: 'Showing all profiles' });
+                }
+
+                ManageEntries(items, msg.showAll);
             }
         }
     });

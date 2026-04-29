@@ -28,13 +28,38 @@ export default class ProfileWalker {
         this.slicePanel = panel;
     }
 
+    private sortProfiles() {
+        const profileMap = new Map<string, Array<SliceProfile>>();
+        this.profiles.forEach( sp => {
+            const [file, line, column, fileHash] = sp.sliceId.split('-');
+            if (!profileMap.has(file)) {
+                profileMap.set(file, []);
+            }
+            profileMap.get(file)?.push(sp);
+        });
+
+        this.profiles = [];
+
+        // sort profiles by decl and rebuild the profiles array
+        profileMap.forEach( (profiles, file) => {
+            profiles.sort((a, b) => {
+                const [aLine, aCol] = a.getDecl();
+                const [bLine, bCol] = b.getDecl();
+                return aLine !== bLine ? aLine - bLine : aCol - bCol;
+            });
+            this.profiles.push(... profiles);
+        });
+    }
+
     pushProfile(sp: SliceProfile, sline: [number, number] | undefined = undefined) {
         // do not insert duplicates
         if (this.profiles.find(p => p === sp)) return;
         console.log('[*] Adding Profile');
 
         this.profiles.push(sp);
-        if (this.slineIndex == 0) {
+        this.sortProfiles();
+
+        if (this.slineIndex === 0) {
             // change index focus if the user is not
             // actively looking through the indexed slice
             this.profileIndex = this.profiles.length - 1;
@@ -66,7 +91,7 @@ export default class ProfileWalker {
             this.clearDecorations();
         }
     }
-    activeCount(): number { return this.profiles.length };
+    activeCount(): number { return this.profiles.length; };
 
     /**
      * Open a read-only editor based on the given

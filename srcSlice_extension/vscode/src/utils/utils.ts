@@ -55,7 +55,6 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
             lineGroups.get(fpath)?.add(line);
         }
 
-        let sortedLines: Array<string> = [];
         const lines = [...(lineGroups.get(profile.getFile()) || [])];
         lines.sort((a, b) => {
             const [, aLine, aCol] = a.split(':').map(Number);
@@ -79,7 +78,6 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
                 }
                 return false;
             });
-            if (match) callMap.set(match, call.invoke);
         }
 
         // prevent
@@ -88,13 +86,13 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
         const insertCallLines = (invokeLine: string) => {
             const func = profile.sliceData.calls.find(c => c.invoke === invokeLine);
             if (!func) return [];
-
+            
             const call_sline_start = profile.sliceData.use.find(line => {
                 const [lineFile, lineNum] = line.split(':');
                 const [funcFile, funcLine] = func.definitionPosition.split(':');
                 return lineFile === funcFile && Number(lineNum) >= Number(funcLine);
             });
-
+            
             if (!call_sline_start) return [];
 
             // collect a list of slines between a given start and end
@@ -139,6 +137,7 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
             return findLines(call_sline_start);
         };
 
+        const sortedLines: string[] = [];
         let insert = false;
         for (const line of lines) {
             if (line === profile.sliceData.decl) {

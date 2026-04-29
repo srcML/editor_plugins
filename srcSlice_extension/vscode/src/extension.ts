@@ -247,6 +247,23 @@ export function activate(context: vscode.ExtensionContext) {
         }
     );
     context.subscriptions.push(refreshVisuals);
+
+    let filterOn = vscode.commands.registerCommand("srcslice-extension.filterOn",
+        async () => {
+            console.log("[!] Filter Profiles");
+            SlicePanel.Filter(false);
+            await vscode.commands.executeCommand('workbench.view.extension.srcSlice-extension');
+        }
+    );
+    context.subscriptions.push(filterOn);
+    let filterOff = vscode.commands.registerCommand("srcslice-extension.filterOff",
+        async () => {
+            console.log("[!] No-Filter Profiles");
+            SlicePanel.Filter(true);
+            await vscode.commands.executeCommand('workbench.view.extension.srcSlice-extension');
+        }
+    );
+    context.subscriptions.push(filterOff);
 }
 
 // This method is called when your extension is deactivated
