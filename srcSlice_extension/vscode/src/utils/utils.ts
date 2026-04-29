@@ -65,14 +65,25 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
 
         const callMap = new Map<string, string>();
         for (const call of profile.sliceData.calls) {
-            const [invokeFile, invokeLine] = call.invoke.split(':');
+            const [invokeFile, invokeLine, invokeCol] = call.invoke.split(':');
             // Find the closest line at or after the invoke position
             const match = lines.find(line => {
-                const [lineFile, lineNum] = line.split(':');
-                return lineFile === invokeFile && Number(lineNum) >= Number(invokeLine);
+                const [lineFile, lineNum, colNum] = line.split(':');
+                
+                if (lineFile === invokeFile) {
+                    if (Number(lineNum) > Number(invokeLine)) {
+                        return true;
+                    } else if (Number(lineNum) == Number(invokeLine)) {
+                        return Number(colNum) > Number(invokeCol);
+                    }
+                }
+                return false;
             });
             if (match) callMap.set(match, call.invoke);
         }
+
+        // prevent
+        const visited: Set<string> = new Set<string>();
 
         const insertCallLines = (invokeLine: string) => {
             const func = profile.sliceData.calls.find(c => c.invoke === invokeLine);
@@ -85,35 +96,47 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
             });
 
             if (!call_sline_start) return [];
-            // console.log(`first sline based on call -> ${call_sline_start}`);
 
-            // find full forward sline list where
-            // index 0 -> start and length-1 -> end
-            const findTransitiveEnd = (start: string) => {
-                let flowLines: Array<string> = [];
-                if (!profile.sliceData.controlEdges) return flowLines;
-                const edges = profile.sliceData.controlEdges;
+            // collect a list of slines between a given start and end
+            const findLines = (start: string) => {
+                const [file, endLine, endCol] = func.endOfFunction.split(':');
+                const lines = lineGroups.get(file);
+                const group: Array<string> = [start];
 
-                let current = start;
+                const [, s_line, s_col] = start.split(':').map(Number);
+                const [e_line, e_col] = [endLine, endCol].map(Number);
 
-                while (true) {
-                    const next = edges.find(e => e[0] === current);
+                lines?.forEach(sline => {
+                    const [, line, col] = sline.split(':').map(Number);
 
-                    // if a find fails we've found the end
-                    if (!next) {
-                        flowLines.push(current);
-                        break;
+                    const afterStart =
+                        line > s_line ||
+                        (line === s_line && col > s_col);
+
+                    const beforeEnd =
+                        line < e_line ||
+                        (line === e_line && col < e_col);
+
+                    if (afterStart && beforeEnd) {
+                        group.push(sline);
+
+                        // test if a given sline we are adding may also be
+                        // a call line
+                        const callLine = callMap.get(sline);
+                        if (callLine && !visited.has(callLine)) {
+                            visited.add(callLine);
+
+                            const result = insertCallLines(callLine);
+                            group.push(... result);
+                            group.push(sline);
+                        }
                     }
+                });
 
-                    flowLines.push(current);
-
-                    current = next[1];
-                }
-
-                return flowLines;
+                return group;
             };
 
-            return findTransitiveEnd(call_sline_start);
+            return findLines(call_sline_start);
         };
 
         let insert = false;
@@ -124,10 +147,12 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
             if (!insert) continue;
             sortedLines.push(line);
 
-            const isCall = callMap.get(line);
-            if (isCall) {
-                const result = insertCallLines(isCall);
-                // console.log(result);
+            const callLine = callMap.get(line);
+            if (callLine && !visited.has(callLine)) {
+                visited.add(callLine);
+
+                const result = insertCallLines(callLine);
+                
                 sortedLines = sortedLines.concat(result);
                 sortedLines.push(line);
             }

@@ -27,6 +27,7 @@ export interface SliceData {
         functionName:string,
         parameter:string,
         definitionPosition:string,
+        endOfFunction:string,
         invoke:string
     }>,
     use:Array<string>,
