@@ -78,6 +78,11 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
                 }
                 return false;
             });
+
+            // populate the call map
+            if (match) {
+                callMap.set(match, call.invoke);
+            }
         }
 
         // prevent
@@ -151,8 +156,7 @@ export async function generateSlines(profile:SliceProfile): Promise<Array<[strin
                 visited.add(callLine);
 
                 const result = insertCallLines(callLine);
-                
-                sortedLines = sortedLines.concat(result);
+                sortedLines.push(... result);
                 sortedLines.push(line);
             }
         }
