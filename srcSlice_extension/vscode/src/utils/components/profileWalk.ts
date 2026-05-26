@@ -86,6 +86,7 @@ export default class ProfileWalker {
             // re-index at most recent enabled profile (back of the array)
             this.profileIndex = this.profiles.length - 1;
             this.slineIndex = 0;
+
             this.repositionCursor();
         } else {
             this.clearDecorations();
@@ -130,10 +131,12 @@ export default class ProfileWalker {
 
         // dispose existing decoration before creating a new one
         this.clearDecorations();
+
         this.lineFocus = vscode.window.createTextEditorDecorationType({
-            backgroundColor: "#626262ce",
+            textDecoration: 'underline',
             isWholeLine: true
         });
+
         if (this.lineFocus) {
             const p = new vscode.Position(pos.line - 1, pos.column - 1);
             const r = new vscode.Range(p,p);
@@ -150,6 +153,7 @@ export default class ProfileWalker {
 
         const [ file, start, end ] = sline;
         await this.changeEditor(file);
+
         this.moveCursor(start);
 
         this.updateWalkDisplay();
@@ -205,5 +209,8 @@ export default class ProfileWalker {
 
     private clearDecorations() {
         this.lineFocus?.dispose();
+    }
+    async hideFocusLine() {
+        this.clearDecorations();
     }
 };

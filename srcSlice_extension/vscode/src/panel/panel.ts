@@ -178,8 +178,8 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
 
             // remove profile from walker
             this.walker.popProfile(this.slices.find(s => s.sliceId === data.sliceId));
-
             if (this.walker.activeCount() > 0) return;
+
             // hide the walker visual in the webview panel
             this.panel?.webview.postMessage({
                 command: 'hide-find'
@@ -188,6 +188,8 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             this.walker?.nextOccurrance();
         } else if (data.command === "lastOccurrance") {
             this.walker?.lastOccurrance();
+        } else if (data.command === "hideLineFocus") {
+            this.walker?.hideFocusLine();
         } else if (data.command === "refreshVisuals") {
             console.log("[*] Refreshing Visuals");
             await this.visualizer?.ResetVisuals();

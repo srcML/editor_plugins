@@ -83,6 +83,8 @@ if (vscode) {
                         findDisplay.textContent = "";
                     }
                 }
+
+                HideLineFocus();
             } else if (msg.command === "filter-profiles") {
                 console.log("Recv'd Filter Instruction");
 
@@ -341,6 +343,10 @@ export function SelectSlice(sliceId, ctrlDown) {
 
     // show interaction feedback (selected/unselected)
     ShowSelected();
+}
+
+export function HideLineFocus() {
+    SendMessage({ command: 'hideLineFocus' });
 }
 
 export function GetNextOccurrance() {

@@ -7,7 +7,9 @@ SPDX-License-Identifier: GPL-3.0-only
 */
 
 import { SendMessage, RefreshVisuals, ManageEntries,
-         SelectSlice, GetNextOccurrance, GetLastOccurrance } from "./utils.js";
+         SelectSlice, GetNextOccurrance, GetLastOccurrance,
+         HideLineFocus
+} from "./utils.js";
 
 let currentIndex = 0;
 export function HandleKeyboard() {
@@ -88,6 +90,8 @@ export function HandleKeyboard() {
                 console.log("Find Next Instance")
                 GetNextOccurrance();
             }
+        } else if (e.key === 'Escape') {
+            HideLineFocus();
         }
     });
 }
