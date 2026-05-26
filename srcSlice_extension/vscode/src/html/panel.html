@@ -9,6 +9,8 @@ SPDX-License-Identifier: GPL-3.0-only
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
         <!-- vscode exposes its icons vis this css codicon -->
         <link href="https://unpkg.com/@vscode/codicons/dist/codicon.css" rel="stylesheet" />
         <style>
@@ -17,12 +19,21 @@ SPDX-License-Identifier: GPL-3.0-only
                 outline: 2px solid var(--vscode-focusBorder);
             }
 
+            html {
+                height: 100%;
+            }
+
             body {
                 font-family: Consolas, Menlo, Monaco, "DejaVu Sans Mono", "Courier New", monospace;
 
                 white-space: nowrap;
-                overflow: hidden;
                 text-overflow: ellipsis;
+
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
             }
 
             details {
@@ -50,12 +61,14 @@ SPDX-License-Identifier: GPL-3.0-only
             }
 
             .content {
-                height: 95vh;
+                flex: 1;           /* take up ALL remaining space after header */
+                min-height: 0;     /* prevents flex children from overflowing */
                 display: flex;
                 flex-direction: column;
             }
 
             .panel-header {
+                flex-shrink: 0; /* do not allow this to be compressed */
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -70,6 +83,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
             .bottom-bar {
                 display: none;
+
+                flex-shrink: 0;
                 border-top: 1px solid #ccc; /* adds a line at the top */
                 padding: 20px;
             }
@@ -103,6 +118,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
             .profile-list {
                 flex: 1;
+                min-height: 0;
+
                 overflow-y: auto;
                 overflow-x: hidden;
             }
@@ -169,5 +186,15 @@ SPDX-License-Identifier: GPL-3.0-only
         </div>
 
         <script type="module" src="{{script_uri}}"></script>
+        <script>
+            // Force layout recalculation on zoom/resize in VSCode webviews
+            const resizeObserver = new ResizeObserver(() => {
+                document.documentElement.style.display = 'none';
+                // Trigger reflow
+                document.documentElement.offsetHeight;
+                document.documentElement.style.display = '';
+            });
+            resizeObserver.observe(document.body);
+        </script>
     </body>
 </html>
