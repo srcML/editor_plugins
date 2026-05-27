@@ -1,6 +1,6 @@
 {
     "name": "srcslice-extension",
-    "displayName": "srcSlice Extension",
+    "displayName": "Slice Inspector",
     "description": "Uses srcSlice, a fast lightweight srcML tool for static slicing, for visualizing slices",
     "publisher":"srcML",
     "icon":"resources/extension-icon.png",
@@ -19,7 +19,7 @@
             "activitybar": [
                 {
                     "id": "srcSlice-extension",
-                    "title": "srcSlice",
+                    "title": "Slice Inspector",
                     "icon": "resources/srcml-logo.svg"
                 }
             ]
@@ -29,7 +29,7 @@
                 {
                     "type": "webview",
                     "id": "srcSlice-viewer",
-                    "name": "srcSlice Panel",
+                    "name": "",
                     "icon": "resources/srcml-logo.svg"
                 }
             ]
