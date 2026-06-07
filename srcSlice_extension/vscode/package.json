@@ -45,11 +45,11 @@
             },
             {
                 "command": "srcslice-extension.getEditorSlices",
-                "title": "Get slices from editors"
+                "title": "Get slices from Editors"
             },
             {
                 "command": "srcslice-extension.getAllSlices",
-                "title": "Get all slices within the workspace"
+                "title": "Get slices from Workspace"
             }
         ],
         "keybindings": [
@@ -90,6 +90,14 @@
         ],
         "menus": {
             "editor/context": [
+                {
+                    "command": "srcslice-extension.getEditorSlices",
+                    "group": "navigation"
+                },
+                {
+                    "command": "srcslice-extension.getAllSlices",
+                    "group": "navigation"
+                },
                 {
                     "command": "srcslice-extension.findSlice",
                     "when": "editorHasSelection",

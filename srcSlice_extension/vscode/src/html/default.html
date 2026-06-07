@@ -1,0 +1,66 @@
+<!--
+SPDX-License-Identifier: GPL-3.0-only
+
+@file default.html
+
+@copyright Copyright (C) 2013-2024 srcML, LLC. (www.srcML.org)
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <style>
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 9px 18px;
+                font-size: 14px;
+                font-weight: 500;
+                border-radius: 8px;
+                border: 1px solid transparent;
+                cursor: pointer;
+                letter-spacing: 0.01em;
+                transition: background 0.15s, border-color 0.15s, transform 0.1s;
+            }
+
+            .btn:active {
+                transform: scale(0.97);
+            }
+
+            .btn-ghost {
+                background: #ffffff;
+                color: #1a1a1a;
+                border-color: #d1d5db;
+            }
+
+            .btn-ghost:hover {
+                background: #f3f4f6;
+                border-color: #9ca3af;
+            }
+
+            .btn-group {
+                display: flex;
+                gap: 6px;
+            }
+
+            @media (max-width: 768px) {
+                .btn-group {
+                    flex-direction: column;
+                }
+            }
+            </style>
+    </head>
+    <body>
+        <h2>No Slices Computed</h2>
+
+        <div class="btn-group">
+            <button id="sw-action" class="btn btn-ghost">Slice Workspace</button>
+            <button id="se-action" class="btn btn-ghost">Slice Editors</button>
+        </div>
+
+        <script type="module" src="{{script_uri}}"></script>
+    </body>
+</html>

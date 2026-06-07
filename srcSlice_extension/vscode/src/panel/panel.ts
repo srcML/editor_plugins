@@ -113,22 +113,23 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
     private visualizer:Visualizer|undefined;
     private walker:ProfileWalker = new ProfileWalker();
 
-    resolveWebviewView(view: vscode.WebviewView) {
+    async resolveWebviewView(view: vscode.WebviewView) {
+        // load default panel html
         this.panel = view;
 
         view.webview.options = {
             enableScripts: true
         };
 
-        // content displayed in the activity bar
-        view.webview.html = `
-        <!DOCTYPE html>
-        <html>
-            <body>
-                <h2>No Slices Computed</h2>
-            </body>
-        </html>
-        `;
+        const baseDir = __dirname;
+        const filePath = path.join(baseDir, "../../src/html/default.html");
+        let fileContent = await fs.promises.readFile(filePath, "utf8");
+        const scriptPath = vscode.Uri.file(
+            path.join(this.ctx.extensionPath, 'src/html/js/default.js')
+        );
+        const scriptUri = this.panel.webview.asWebviewUri(scriptPath);
+        fileContent = fileContent.replace("{{script_uri}}", scriptUri.toString());
+        view.webview.html = fileContent;
 
         // listen for signals from webview panel
         view.webview.onDidReceiveMessage(
@@ -199,6 +200,10 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
         } else if (data.command === "listener-ready") {
             console.log("[+] Panel listener ready!");
             this.panelActive = true;
+        } else if (data.command === "sliceWorkspace") {
+            await vscode.commands.executeCommand('srcslice-extension.getAllSlices');
+        } else if (data.command === "sliceEditors") {
+            await vscode.commands.executeCommand('srcslice-extension.getEditorSlices');
         } else {
             console.error(`Unknown Command: ${data.command}`);
         }
@@ -231,7 +236,16 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
                 <!DOCTYPE html>
                 <html>
                     <body>
-                        <h2>Loading Profiles</h2>
+                        <h2 id="hero-display"></h2>
+                        <script>
+                            const t = document.getElementById("hero-display");
+                            const dots = [".","..","..."];
+                            let i = 0;
+
+                            setInterval(() => {
+                                t.textContent = "Collecting Slices" + dots[i++ % dots.length];
+                            }, 500);
+                        </script>
                     </body>
                 </html>
                 `;
