@@ -1,9 +1,9 @@
 {
-    "name": "srcslice-extension",
+    "name": "slice-inspector",
     "displayName": "Slice Inspector",
     "description": "Uses srcSlice, a fast lightweight srcML tool for static slicing, for visualizing slices",
-    "publisher":"srcML",
-    "icon":"resources/extension-icon.png",
+    "publisher": "srcML",
+    "icon": "resources/extension-icon.png",
     "version": "0.0.1",
     "license": "GPL-3.0",
     "engines": {
@@ -12,23 +12,25 @@
     "categories": [
         "Other"
     ],
-    "activationEvents": [ "onStartupFinished" ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
     "main": "./out/extension.js",
     "contributes": {
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "srcSlice-extension",
+                    "id": "slice-inspector",
                     "title": "Slice Inspector",
                     "icon": "resources/srcml-logo.svg"
                 }
             ]
         },
         "views": {
-            "srcSlice-extension": [
+            "slice-inspector": [
                 {
                     "type": "webview",
-                    "id": "srcSlice-viewer",
+                    "id": "slice-viewer",
                     "name": "",
                     "icon": "resources/srcml-logo.svg"
                 }
@@ -36,54 +38,77 @@
         },
         "commands": [
             {
-                "command": "srcslice-extension.findSlice",
+                "command": "slice-inspector.findSlice",
                 "title": "Find Slice"
             },
             {
-                "command": "srcslice-extension.hideSlice",
+                "command": "slice-inspector.hideSlice",
                 "title": "Hide Slice"
             },
+            
             {
-                "command": "srcslice-extension.getEditorSlices",
+                "command": "slice-inspector.findSlices",
+                "title": "Inspect Selection"
+            },
+            {
+                "command": "slice-inspector.hideSlices",
+                "title": "Disregard Selection"
+            },
+
+            {
+                "command": "slice-inspector.getEditorSlices",
                 "title": "Get slices from Editors"
             },
             {
-                "command": "srcslice-extension.getAllSlices",
+                "command": "slice-inspector.getAllSlices",
                 "title": "Get slices from Workspace"
             }
         ],
         "keybindings": [
             {
-                "command": "srcslice-extension.findSlice",
+                "command": "slice-inspector.findSlice",
                 "key": "ctrl+alt+f",
                 "mac": "cmd+alt+f",
-                "when": "editorTextFocus"
+                "when": "slice-inspector.isWordSelection"
             },
             {
-                "command": "srcslice-extension.hideSlice",
+                "command": "slice-inspector.hideSlice",
                 "key": "ctrl+alt+h",
                 "mac": "cmd+alt+h",
-                "when": "editorTextFocus"
+                "when": "slice-inspector.isWordSelection"
             },
-            
+
             {
-                "command": "srcslice-extension.filterOff",
+                "command": "slice-inspector.findSlices",
+                "key": "ctrl+shift+alt+f",
+                "mac": "cmd+shift+alt+f",
+                "when": "slice-inspector.isMultiLineSelection"
+            },
+            {
+                "command": "slice-inspector.hideSlices",
+                "key": "ctrl+shift+alt+h",
+                "mac": "cmd+shift+alt+h",
+                "when": "slice-inspector.isMultiLineSelection"
+            },
+
+            {
+                "command": "slice-inspector.filterOff",
                 "key": "ctrl+alt+l",
                 "mac": "cmd+alt+l"
             },
             {
-                "command": "srcslice-extension.filterOn",
+                "command": "slice-inspector.filterOn",
                 "key": "ctrl+alt+k",
                 "mac": "cmd+alt+k"
             },
-            
+
             {
-                "command": "srcslice-extension.getEditorSlices",
+                "command": "slice-inspector.getEditorSlices",
                 "key": "ctrl+alt+e",
                 "mac": "cmd+alt+e"
             },
             {
-                "command": "srcslice-extension.getAllSlices",
+                "command": "slice-inspector.getAllSlices",
                 "key": "ctrl+alt+a",
                 "mac": "cmd+alt+a"
             }
@@ -91,21 +116,31 @@
         "menus": {
             "editor/context": [
                 {
-                    "command": "srcslice-extension.getEditorSlices",
+                    "command": "slice-inspector.getEditorSlices",
                     "group": "navigation"
                 },
                 {
-                    "command": "srcslice-extension.getAllSlices",
+                    "command": "slice-inspector.getAllSlices",
                     "group": "navigation"
                 },
                 {
-                    "command": "srcslice-extension.findSlice",
-                    "when": "editorHasSelection",
+                    "command": "slice-inspector.findSlice",
+                    "when": "slice-inspector.isWordSelection",
                     "group": "navigation"
                 },
                 {
-                    "command": "srcslice-extension.hideSlice",
-                    "when": "editorHasSelection",
+                    "command": "slice-inspector.hideSlice",
+                    "when": "slice-inspector.isWordSelection",
+                    "group": "navigation"
+                },
+                {
+                    "command": "slice-inspector.findSlices",
+                    "when": "slice-inspector.isMultiLineSelection",
+                    "group": "navigation"
+                },
+                {
+                    "command": "slice-inspector.hideSlices",
+                    "when": "slice-inspector.isMultiLineSelection",
                     "group": "navigation"
                 }
             ]
@@ -129,6 +164,8 @@
         "typescript": "^5.9.2"
     },
     "dependencies": {
-        "xml2js": "^0.6.2"
+        "@xmldom/xmldom": "^0.9.10",
+        "xml2js": "^0.6.2",
+        "xpath": "^0.0.34"
     }
 }

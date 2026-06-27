@@ -201,9 +201,9 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             console.log("[+] Panel listener ready!");
             this.panelActive = true;
         } else if (data.command === "sliceWorkspace") {
-            await vscode.commands.executeCommand('srcslice-extension.getAllSlices');
+            await vscode.commands.executeCommand('slice-inspector.getAllSlices');
         } else if (data.command === "sliceEditors") {
-            await vscode.commands.executeCommand('srcslice-extension.getEditorSlices');
+            await vscode.commands.executeCommand('slice-inspector.getEditorSlices');
         } else {
             console.error(`Unknown Command: ${data.command}`);
         }
@@ -374,12 +374,16 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
      * @returns slice profile
      */
     private async FindSliceFromSline(name:string, file:string, sline: [Number,Number]) {
+        console.log(`[DEBUG] ${name} ${sline[0]}:${sline[1]} -> ${file}`);
+        
         const t_sline = `${sline?.[0]}:${sline?.[1]}`;
         const sp = this.slices.find(s => {
             if (s.sliceData.name === name) {
                 for (const sline of s.slines) {
                     const matchingPosition:boolean  = t_sline === sline[1].ToString();
                     const matchingFile:boolean      = fromFileTable(s.sliceData.file) === file;
+
+                    console.log(` |__ ${fromFileTable(s.sliceData.file)} === ${file}`);
     
                     if (matchingPosition && matchingFile) {
                         return s;

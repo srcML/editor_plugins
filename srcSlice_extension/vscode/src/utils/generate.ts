@@ -40,6 +40,19 @@ export function fromFileTable(tmpFile:string): string|undefined {
 }
 
 /**
+ * 
+ * @param editorFile 
+ * @returns associated tmp file based on file from editor
+ */
+export function getUnitFile(editorFile:string): string|undefined {
+    const file = SRC_FILE_TABLE.find(f => {
+        const [srcFile,tFile] = f;
+        return srcFile === editorFile;
+    });
+    return file ? file[1] : undefined;
+}
+
+/**
  * Checks if srcML is installed on the system and creates a srcML archive
  * srcSlice uses to generate slice data
  * @param targets array of file paths
