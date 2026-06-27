@@ -353,6 +353,14 @@ export function GetNextOccurrance() {
     SendMessage({ command: 'nextOccurrance' });
 }
 
+export function StepOverCall() {
+    SendMessage({ command: 'stepOver' });
+}
+
+export function StepBackOverCall() {
+    SendMessage({ command: 'stepBackOver' });
+}
+
 export function GetLastOccurrance() {
     SendMessage({ command: 'lastOccurrance' });
 }

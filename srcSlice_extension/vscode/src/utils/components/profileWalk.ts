@@ -176,6 +176,48 @@ export default class ProfileWalker {
         await this.repositionCursor();
     }
 
+    async stepOver() {
+        const profile = this.profiles[this.profileIndex];
+        const jumpEntity = profile.stepOvers.find((jmp_el: [number,number]) => {
+            return this.slineIndex === jmp_el[0];
+        });
+
+        if (!jumpEntity) {
+            await this.nextOccurrance();
+        } else {
+            // jump over the call sline span
+            this.slineIndex = jumpEntity[1]+1;
+
+            // check if we exceeded bounds and increment the profileIndex
+            if (this.slineIndex >= this.profiles[this.profileIndex].slines.length) {
+                this.profileIndex = ++this.profileIndex % this.profiles.length;
+                this.slineIndex = 0;
+            }
+            await this.repositionCursor();
+        }
+    }
+
+    async stepBackOver() {
+        const profile = this.profiles[this.profileIndex];
+        const jumpEntity = profile.stepOvers.find((jmp_el: [number,number]) => {
+            return this.slineIndex === jmp_el[1];
+        });
+
+        if (!jumpEntity) {
+            await this.lastOccurrance();
+        } else {
+            // jump over the call sline span backwards
+            this.slineIndex = jumpEntity[0]-1;
+            
+            // check if we exceeded bounds and decrement the profileIndex
+            if (this.slineIndex < 0) {
+                this.profileIndex = (--this.profileIndex + this.profiles.length) % this.profiles.length;
+                this.slineIndex = this.profiles[this.profileIndex].slines.length - 1;
+            }
+            await this.repositionCursor();
+        }
+    }
+
     /**
      * Move cursor to the previous sline
      * 

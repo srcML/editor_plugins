@@ -35,6 +35,20 @@ export function randomString(length = 8) {
     return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
 
+export async function generateStepOvers(slines: Array<[string, LinePosition, LinePosition]>): Promise<Array<[number,number]>> {
+    let group: Array<[number,number]> = [];
+    for (let i = 0; i < slines.length; ++i) {
+        for (let k = i+1; k < slines.length; ++k) {
+            if (slines[i][0] !== slines[k][0]) { continue; }
+            if (slines[i][1].ToString() !== slines[k][1].ToString()) { continue; }
+            if (slines[i][2].ToString() !== slines[k][2].ToString()) { continue; }
+            group.push([i,k]);
+        }
+    }
+    console.log("[*] Number of Step-Overs:", group.length);
+    return group;
+}
+
 /**
  * Produce a collection of position start,end ranges of where
  * the given profile is being referenced

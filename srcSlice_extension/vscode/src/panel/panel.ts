@@ -187,8 +187,14 @@ export class SrcSlicePanel implements vscode.WebviewViewProvider {
             });
         } else if (data.command === "nextOccurrance") {
             this.walker?.nextOccurrance();
+        } else if (data.command === "stepOver") {
+            console.log("[*] Attempting to Step-Over");
+            this.walker?.stepOver();
         } else if (data.command === "lastOccurrance") {
             this.walker?.lastOccurrance();
+        } else if (data.command === "stepBackOver") {
+            console.log("[*] Attempting to Step Back Over");
+            this.walker?.stepBackOver();
         } else if (data.command === "hideLineFocus") {
             this.walker?.hideFocusLine();
         } else if (data.command === "refreshVisuals") {

@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 import { SendMessage, RefreshVisuals, ManageEntries,
          SelectSlice, GetNextOccurrance, GetLastOccurrance,
-         HideLineFocus
+         HideLineFocus, StepOverCall, StepBackOverCall
 } from "./utils.js";
 
 let currentIndex = 0;
@@ -119,10 +119,21 @@ export function HandleMouse() {
         GetNextOccurrance();
     });
 
+    // find step over button
+    const stepOverBtn = document.getElementById('stepOverBtn');
+    stepOverBtn?.addEventListener('click', () => {
+        StepOverCall();
+    });
+
     // find prev button
     const findPrevBtn = document.getElementById('findPrevBtn');
     findPrevBtn?.addEventListener('click', () => {
         GetLastOccurrance();
+    });
+
+    const stepOverRevBtn = document.getElementById('stepOverRevBtn');
+    stepOverRevBtn?.addEventListener('click', () => {
+        StepBackOverCall();
     });
 
     // visual refresh button

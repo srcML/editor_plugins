@@ -8,7 +8,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 import * as vscode from 'vscode';
 
-import { generateSlines, sleep } from './utils';
+import { generateSlines, generateStepOvers, sleep } from './utils';
 import { fromFileTable } from './generate';
 
 // typedef alias
@@ -43,6 +43,7 @@ export class SliceProfile {
     public sliceId: string;
     public identifier: string = "";
     public slines: Array<[string, LinePosition, LinePosition]> = [];
+    public stepOvers: Array<[number,number]> = []; // collection of indice jumps to step over function calls
     public containedFiles: Set<string> = new Set<string>();
 
     constructor(id:string, data: SliceData) {
@@ -52,6 +53,10 @@ export class SliceProfile {
 
     async setSlines() {
         this.slines = await generateSlines(this);
+
+        this.stepOvers = await generateStepOvers(this.slines);
+
+        console.log(this.stepOvers);
 
         // establish the list of files the slice is contained within
         // respective to the vscode.editor
@@ -86,7 +91,7 @@ export class SliceProfile {
         const line = components[1];
         const column = components[2];
 
-        return `${name} ${line}:${column}`
+        return `${name} ${line}:${column}`;
     }
 
     /**
@@ -216,8 +221,8 @@ export class HighLight {
     }
 
     async reApply(editor: vscode.TextEditor|undefined) {
-        if (!this.ranges) return;
-        if (!this.lineDecoration) return;
+        if (!this.ranges) { return; }
+        if (!this.lineDecoration) { return; }
 
         // decorations are only applied to the given editor
         editor?.setDecorations(this.lineDecoration, this.ranges);
@@ -241,7 +246,7 @@ export class HighLight {
     getDecoration() { return this.lineDecoration; }
 
     setRanges(ranges: Array<vscode.Range>|undefined) {
-        if (!ranges) return;
+        if (!ranges) { return; }
         this.ranges = ranges;
 
         if (this.originalRanges.length === 0) {
@@ -253,7 +258,7 @@ export class HighLight {
     // adds a given range is its not present
     addRange(range: vscode.Range) {
         this.ranges.forEach(r => {
-            if (r.isEqual(range)) return;
+            if (r.isEqual(range)) { return; }
         });
         this.ranges.push(range);
     }
@@ -262,12 +267,12 @@ export class HighLight {
         const index = this.ranges.findIndex(r => {
             return r.isEqual(range);
         });
-        if (index === -1) return;
+        if (index === -1) { return; }
         this.ranges.splice(index, 1);
     }
 
     getRecentEditor() { return this.recentEditor; }
-    setRecentEditor(editor: vscode.TextEditor|undefined) { if (editor) this.recentEditor = editor; }
+    setRecentEditor(editor: vscode.TextEditor|undefined) { if (editor) { this.recentEditor = editor; } }
 
     /**
      * 
@@ -275,19 +280,19 @@ export class HighLight {
      * @returns if the current highlight has any overlapping ranges with a given highlight
      */
     overlaps(other: HighLight): boolean {
-        if (this === other) return true;
-        if (!other) return false;
+        if (this === other) { return true; }
+        if (!other) { return false; }
 
         const fp1 = this.recentEditor?.document.uri.fsPath;
         const fp2 = other.getRecentEditor()?.document.uri.fsPath;
 
         // check if the high lights exist in the same editor
-        if (fp1 !== fp2) return false;
+        if (fp1 !== fp2) { return false; }
 
         for (const r of this.ranges) {
             for (const r2 of other.getRanges()) {
                 const matching = r.isEqual(r2);
-                if (matching) return true;
+                if (matching) { return true; }
             }
         }
 
@@ -343,7 +348,7 @@ export class ColorToggle {
                 // the intersection range
                 for (const focus of highLights) {
                     for (const target of highLights) {
-                        if (!this.running) return;
+                        if (!this.running) { return; }
 
                         await clearRange();
                         for (const range of commonRange) {
@@ -354,7 +359,7 @@ export class ColorToggle {
                             }
                         }
                         target.reApply(target.getRecentEditor());
-                        if (focus === target) await sleep(1000);
+                        if (focus === target) { await sleep(1000); }
                     }
                 }
             }
