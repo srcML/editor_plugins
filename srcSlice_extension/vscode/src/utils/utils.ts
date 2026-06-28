@@ -45,7 +45,6 @@ export async function generateStepOvers(slines: Array<[string, LinePosition, Lin
             group.push([i,k]);
         }
     }
-    console.log("[*] Number of Step-Overs:", group.length);
     return group;
 }
 
